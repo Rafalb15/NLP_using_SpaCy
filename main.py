@@ -44,7 +44,7 @@ def main():
     query = []
     #spacy.displacy.serve(pre_processed_phrase, style='dep')
     for token in pre_processed_phrase:
-        print(token.text, token.dep_, token.pos_, list(token.children))
+        #print(token.text, token.dep_, token.pos_, list(token.children))
         if (token.dep_ == 'npadvmod'):
             # This relation captures various places where something syntactically a noun phrase (NP) is used as an adverbial modifier in a sentence.
             temp_string = ' '.join([child.text for child in token.children if child.pos_ == 'NUM'])
