@@ -30,36 +30,59 @@ def query_list():
     query_store.append("return IRA documents from year 2004 and DOB 11/15/1994")
     query_store.append("return W-9 documents where year is 2011")
     query_store.append("return Tax documents where year is 2019")
-    query_store.append("return Tax documents where DOB 11/15/1994 and year is 2004")
-    query_store.append("return all documents from year 2004 and DOB 11/15/1994")
+    query_store.append("return Tax documents where DOB is 11/15/1994 and year is 2004")
+    query_store.append("return documents from year 2004 and DOB 11/15/1994")
     random_index = random.randint(0, len(query_store) - 1)
-    return query_store[random_index]
+    return query_store
+
+
+def look_for_nested_child(token):
+    # A
+    # sequence
+    # containing
+    # the
+    # token and all
+    # the
+    # token’s
+    # syntactic
+    # descendants.
+    for child in token.subtree:
+        print(child.text)
 
 
 def main():
     nlp = spacy.load('en_core_web_sm')
     # phrase = nlp(get_input_phrase())
-    pre_processed_phrase = pre_process(nlp, query_list())
-    print("> Attempt to parse : ", pre_processed_phrase)
-    query = []
-    #spacy.displacy.serve(pre_processed_phrase, style='dep')
-    for token in pre_processed_phrase:
-        #print(token.text, token.dep_, token.pos_, list(token.children))
-        if (token.dep_ == 'npadvmod'):
-            # This relation captures various places where something syntactically a noun phrase (NP) is used as an adverbial modifier in a sentence.
-            temp_string = ' '.join([child.text for child in token.children if child.pos_ == 'NUM'])
-            query.append(token.text + '=' + temp_string)
-        if (token.pos_ == 'NOUN' and token.dep_ == 'compound' and len(list(token.children)) > 0):
-            temp_string = ' '.join(
-                [child.text for child in token.children if child.pos_ == 'NOUN' or child.pos_ == 'PROPN'])
-            query.append(token.text + '=' + temp_string)
-        if (token.dep_ == 'appos'):
-            # An appositional modifier of an NP is an NP immediately to the right of the first NP that serves to define
-            # or modify that NP.
-            temp_string = ' '.join([child.text for child in token.rights])
-            query.append(token.text + '=' + temp_string)
+    query_store = query_list()
 
-    print(' \n'.join(qp for qp in query))
+    for q in query_store:
+
+        pre_processed_phrase = pre_process(nlp, q)
+        print("> Attempting to parse : ", pre_processed_phrase)
+        query = []
+
+        # spacy.displacy.serve(pre_processed_phrase, style='dep')
+        for token in pre_processed_phrase:
+            #print(token.text, token.dep_, token.pos_, list(token.children), list(token.subtree))
+            if (token.dep_ == 'npadvmod'):
+                # This relation captures various places where something syntactically a noun phrase (NP) is used as an adverbial modifier in a sentence.
+                # look for specific descendants of the word (nested children of children_ to find a year
+                temp_string = ' '.join(
+                    [child.text for child in token.subtree if
+                     child.pos_ == 'NUM' and child.dep_ == 'nummod' and child.shape_ == 'dddd'])
+                query.append(token.text + '=' + temp_string)
+            if (token.pos_ == 'NOUN' and (token.dep_ == 'compound' or token.dep_ == 'dobj') and len(
+                    list(token.children)) > 0):
+                temp_string = ' '.join(
+                    [child.text for child in token.children if child.pos_ == 'NOUN' or child.pos_ == 'PROPN'])
+                query.append(token.text + '=' + temp_string)
+            if (token.dep_ == 'appos'):
+                # An appositional modifier of an NP is an NP immediately to the right of the first NP that serves to define
+                # or modify that NP.
+                temp_string = ' '.join([child.text for child in token.rights])
+                query.append(token.text + '=' + temp_string)
+
+        print(' \n'.join(qp for qp in query))
 
 
 if __name__ == "__main__":
