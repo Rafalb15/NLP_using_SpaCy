@@ -5,9 +5,18 @@
       <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
       <title>Spacy & Solr demonstration</title>
       <script>
+          function clear_out_result_area(){
+            document.getElementById("query_line").value = "";
+            document.getElementById("query_parsed_result").innerHTML = "";
+            document.getElementById("Solr_query_title").style.opacity = 0.0;
+            document.getElementById("Solr_query_time").innerHTML = "";
+            document.getElementById("Solr_query_docs").innerHTML = "";
+          };
+
          $("document").ready(function(){
              $("#submit_button").click(function(){
                  var message = $("#query_line").val();
+                 clear_out_result_area();
                  if (message.length > 0){
                  $.ajax({
                      url: "/query",
@@ -16,21 +25,18 @@
                      data: JSON.stringify({"message": message})
                  }).done(function(data) {
                      console.log(data);
-                     document.getElementById("query_result").innerHTML = data;
+                     document.getElementById("query_parsed_result").innerHTML = data;
                  });
                }
                else {
-                 document.getElementById("query_result").innerHTML = "Please input a query, blank will not be accepted";
+                 document.getElementById("query_parsed_result").innerHTML = "Please input a query, blank will not be accepted";
                }
              });
          });
 
          $("document").ready(function(){
              $("#clear_button").click(function(){
-                 document.getElementById("query_line").value = "";
-                 document.getElementById("query_result").innerHTML = "";
-                 document.getElementById("return_val").style.opacity = 0.0;
-                 document.getElementById("log").innerHTML = "";
+                clear_out_result_area();
              });
          });
 
@@ -42,9 +48,9 @@
 
              socket.on('newdata', function(msg) {
                  //set the opacity of the div to 1
-                 document.getElementById("return_val").style.opacity = 1;
+                 document.getElementById("Solr_query_title").style.opacity = 1;
                  // get current div contents
-                 doc_string = document.getElementById("log").innerHTML;
+                 doc_string = document.getElementById("Solr_query_docs").innerHTML;
                  console.log("Received item:" + msg.document);
                  console.log("Time elapsed:" + msg.time);
                  var solr_results = String(msg.document);
@@ -57,7 +63,8 @@
                  for (var i = 0; i < docs_received.length; i++){
                      doc_string = doc_string + '<br>' + docs_received[i].toString();
                  }
-                 document.getElementById("log").innerHTML = doc_string;
+                 document.getElementById("Solr_query_time").innerHTML = "(Time taken: " + msg.time + " seconds | Number of results: " + docs_received.length + ")";
+                 document.getElementById("Solr_query_docs").innerHTML = doc_string;
              });
 
          });
@@ -123,12 +130,13 @@
    <body data-gr-c-s-loaded="true" style="width:80%; margin: 0 auto">
       <h1 id="title">Spacy & Solr demonstration for NLP and indexing</h1>
       <div style="padding-top: 50px; padding-bottom: 10px">
-         <input type="text" class="line-input" id="query_line" size="100" placeholder="Type in your query here ... ">
+         <input type="text" class="line-input" id="query_line" size="100" placeholder="Type in your query here, example: get W9 documents where year is 2004 ... ">
       </div>
       <button id="submit_button" class="button button1" >Submit</button>
       <button id="clear_button" class="button button3" >Clear results</button>
-      <div id="query_result" style="font-family: Georgia; font-size : 20px; padding-top: 10px" ></div>
-      <div id="return_val" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0" >Query results from Solr</div>
-      <div id="log" style="font-family: Georgia; font-size : 20px"></div>
+      <div id="query_parsed_result" style="font-family: Georgia; font-size : 15px; padding-top: 10px; font-style: italic;" ></div>
+      <div id="Solr_query_title" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0" >Query results from Solr</div>
+      <div id="Solr_query_time" style="font-family: Georgia; font-size : 15px; font-style: italic; padding-top: 5px"></div>
+      <div id="Solr_query_docs" style="font-family: Georgia; font-size : 20px"></div>
    </body>
 </html>

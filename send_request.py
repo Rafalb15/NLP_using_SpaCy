@@ -37,6 +37,11 @@ class POST_request():
             'time_elapsed': time
         }
         url = "http://{}:{}/{}".format(self.url, self.port_number, self.dir)
-        response = requests.post(url, headers=headers, data=json.dumps(payload))
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=2)
+            #response.raise_for_status()
+            return_str = response.json()
+        except Exception as e:
+            return_str = e + "\n" + "Timeout set to 2 seconds"
+        finally:
+            return return_str
