@@ -1,11 +1,12 @@
 <html>
-   <head>
-      <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-      <title>Spacy & Solr demonstration</title>
-      <script>
-          function clear_out_result_area(){
+
+<head>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+  <title>Spacy & Solr demonstration</title>
+  <script>
+    function clear_out_all(){
             document.getElementById("query_line").value = "";
             document.getElementById("query_parsed_result").innerHTML = "";
             document.getElementById("Solr_query_title").style.opacity = 0.0;
@@ -13,10 +14,16 @@
             document.getElementById("Solr_query_docs").innerHTML = "";
           };
 
+          function clear_out_query_results(){
+            document.getElementById("Solr_query_title").style.opacity = 0.0;
+            document.getElementById("Solr_query_time").innerHTML = "";
+            document.getElementById("Solr_query_docs").innerHTML = "";
+          };
+
          $("document").ready(function(){
              $("#submit_button").click(function(){
+                 clear_out_query_results();
                  var message = $("#query_line").val();
-                 clear_out_result_area();
                  if (message.length > 0){
                  $.ajax({
                      url: "/query",
@@ -36,7 +43,7 @@
 
          $("document").ready(function(){
              $("#clear_button").click(function(){
-                clear_out_result_area();
+                clear_out_all();
              });
          });
 
@@ -56,22 +63,22 @@
                  var solr_results = String(msg.document);
                  docs_received = solr_results.split(",");
                  //maintain a list of ten docs, pop any others
-                 if (docs_received.length >= 10){
-                     docs_received.pop();
-                 }
+                 // if (docs_received.length >= 10){
+                 //     docs_received.pop();
+                 // }
                  //docs_received.push(msg.document);
                  for (var i = 0; i < docs_received.length; i++){
                      doc_string = doc_string + '<br>' + docs_received[i].toString();
                  }
-                 document.getElementById("Solr_query_time").innerHTML = "(Time taken: " + msg.time + " seconds | Number of results: " + docs_received.length + ")";
+                 document.getElementById("Solr_query_time").innerHTML = "(Number of results: " + docs_received.length + " | Time taken: " + msg.time + " seconds)";
                  document.getElementById("Solr_query_docs").innerHTML = doc_string;
              });
 
          });
 
       </script>
-      <style>
-         /* div.wrapper {
+  <style>
+    /* div.wrapper {
          width: 300px;
          height:300px;
          border:1px solid black;
@@ -126,17 +133,19 @@
          color: white;
          }
       </style>
-   </head>
-   <body data-gr-c-s-loaded="true" style="width:80%; margin: 0 auto">
-      <h1 id="title">Spacy & Solr demonstration for NLP and indexing</h1>
-      <div style="padding-top: 50px; padding-bottom: 10px">
-         <input type="text" class="line-input" id="query_line" size="100" placeholder="Type in your query here, example: get W9 documents where year is 2004 ... ">
-      </div>
-      <button id="submit_button" class="button button1" >Submit</button>
-      <button id="clear_button" class="button button3" >Clear results</button>
-      <div id="query_parsed_result" style="font-family: Georgia; font-size : 15px; padding-top: 10px; font-style: italic;" ></div>
-      <div id="Solr_query_title" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0" >Query results from Solr</div>
-      <div id="Solr_query_time" style="font-family: Georgia; font-size : 15px; font-style: italic; padding-top: 5px"></div>
-      <div id="Solr_query_docs" style="font-family: Georgia; font-size : 20px"></div>
-   </body>
+</head>
+
+<body data-gr-c-s-loaded="true" style="width:80%; margin: 0 auto">
+  <h1 id="title">Spacy & Solr demonstration for NLP and indexing</h1>
+  <div style="padding-top: 50px; padding-bottom: 10px">
+    <input type="text" class="line-input" id="query_line" size="100" placeholder="Type in your query here, example: get W9 documents where year is 2004 ... ">
+  </div>
+  <button id="submit_button" class="button button1">Submit</button>
+  <button id="clear_button" class="button button3">Clear results</button>
+  <div id="query_parsed_result" style="font-family: Georgia; font-size : 15px; padding-top: 10px; font-style: italic;"></div>
+  <div id="Solr_query_title" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0">Query results from Solr</div>
+  <div id="Solr_query_time" style="font-family: Georgia; font-size : 15px; font-style: italic; padding-top: 5px"></div>
+  <div id="Solr_query_docs" style="font-family: Georgia; font-size : 20px"></div>
+</body>
+
 </html>

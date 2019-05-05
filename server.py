@@ -19,6 +19,7 @@ def get_ip_address():
     return s.getsockname()[0]
 
 def get_port_number():
+    port_number = None
     try:
         port_number = int(sys.argv[1])
         return port_number
