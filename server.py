@@ -1,13 +1,14 @@
+#### module imports
+from mainNLP import NLP
+from send_request import POST_request
+######
 from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO, emit
 import socket
 import sys
 import datetime
-from mainNLP import NLP
-from send_request import POST_request
-from flask_socketio import SocketIO, emit
-from random import random
-from time import sleep
-from threading import Thread, Event
+
+
 
 
 app = Flask(__name__)
@@ -48,9 +49,9 @@ def form_post():
     # send that data to Solr
     ############ CHANGE this #####################
     ## RIGHT NOW just sending data to myself on port 9000, in future send it to SOLR on specific port
-    print(send_data_conn.send_message(return_result ,"1.3"))
+    print(send_data_conn.send_message(return_result , nlp_eng.get_time_elapsed()))
     ##############################################
-    return jsonify("(Response: {} | Received: {} | Time elapsed: {} seconds)".format(return_result, currentDT.strftime("%Y-%m-%d %H:%M:%S"), nlp_eng.time_elapsed))
+    return jsonify("(Response: {} | Received: {} | Time elapsed: {} seconds)".format(return_result, currentDT.strftime("%Y-%m-%d %H:%M:%S"), nlp_eng.get_time_elapsed()))
 
 @app.route('/document_listener', methods=['POST'])
 def get_index_result():

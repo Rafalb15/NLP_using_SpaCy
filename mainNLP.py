@@ -7,13 +7,18 @@ class NLP:
         self.time_elapsed = 0
         self.nlp = spacy.load('en_core_web_sm')
 
+    def get_time_elapsed(self):
+        return self.time_elapsed
+
+
     def pre_process(self, nlp, phrase):
         # pre_process takes a query phrase as input
         # purpose:
         # remove stop words and punctuations
         # remove the lemma of the words that are not punctuations and stop words
         phrase = nlp(phrase)
-        text_pre_processed_as_lemma = [token.lemma_ for token in phrase if not token.is_stop and not token.is_punct]
+        # not token.is_stop and
+        text_pre_processed_as_lemma = [token.lemma_ for token in phrase if not token.is_punct]
         # return the list joined as string
         return nlp(' '.join(text_pre_processed_as_lemma))
 
