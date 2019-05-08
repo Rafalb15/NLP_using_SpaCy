@@ -45,7 +45,7 @@ def form_post():
     currentDT = datetime.datetime.now()
     print("Query: {}".format(response["message"]))
     # return result is a array of parsed query points
-    return_result = nlp_eng.get_query_from_phrase(response["message"])
+    return_result = nlp_eng.get_query_from_phrase_test(response["message"])
     # send that data to Solr
     ############ CHANGE this #####################
     ## RIGHT NOW just sending data to myself on port 9000, in future send it to SOLR on specific port
