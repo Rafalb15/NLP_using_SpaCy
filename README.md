@@ -5,9 +5,9 @@
 
 #### Required libraries:
 ##### SpaCy
-##### Requests
-##### flask_socketio
-##### flask
+####### Requests
+####### flask_socketio
+####### flask
 
 # TODO:
 #### Solr/Lucene implementation
