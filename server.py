@@ -8,9 +8,6 @@ import socket
 import sys
 import datetime
 
-
-
-
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -22,10 +19,15 @@ def get_ip_address():
 def get_port_number():
     port_number = None
     try:
-        port_number = int(sys.argv[1])
-        return port_number
-    except Exception as e:
-        print("Issue with the port number specified. {} is not an integer 0-65535\n{}".format(sys.argv[1], e))
+        var = sys.argv[1]
+        try:
+            port_number = int(sys.argv[1])
+            return port_number
+        except Exception as e:
+            print("Issue with the port number specified. {} is not an integer 0-65535\n{}".format(sys.argv[1], e))
+            sys.exit()
+    except:
+        print("No argument passed, pass in a port number after the file name")
         sys.exit()
 
 ################################################################################
@@ -46,9 +48,7 @@ def form_post():
     print("Query: {}".format(response["message"]))
     # return result is a array of parsed query points
     return_result = nlp_eng.get_query_from_phrase_test(response["message"])
-    # send that data to Solr
-    ############ CHANGE this #####################
-    ## RIGHT NOW just sending data to myself on port 9000, in future send it to SOLR on specific port
+    # send that data to Solr/Lucene/whatever
     print(send_data_conn.send_message(return_result , nlp_eng.get_time_elapsed()))
     ##############################################
     return jsonify("(Response: {} | Received: {} | Time elapsed: {} seconds)".format(return_result, currentDT.strftime("%Y-%m-%d %H:%M:%S"), nlp_eng.get_time_elapsed()))
@@ -59,7 +59,7 @@ def get_index_result():
     response = request.get_json(force=True)
     # socket is configured to accept "newdata", along with a json payload of document and time
     socketio.emit('newdata', {'document': response["document_list"], 'time': response["time_elapsed"]}, namespace='/forward_doc_result')
-    return jsonify("Thanks!, received")
+    return jsonify("Got it, over")
 
 
 

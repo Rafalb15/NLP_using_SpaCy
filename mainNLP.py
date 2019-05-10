@@ -1,5 +1,7 @@
 import spacy
 import datetime
+# from threading import Thread
+
 
 class NLP:
     def __init__(self):
@@ -10,6 +12,28 @@ class NLP:
     def get_time_elapsed(self):
         return self.time_elapsed
 
+    def month_string_to_number(self, string):
+        m = {
+            'jan': 1,
+            'feb': 2,
+            'mar': 3,
+            'apr': 4,
+            'may': 5,
+            'jun': 6,
+            'jul': 7,
+            'aug': 8,
+            'sep': 9,
+            'oct': 10,
+            'nov': 11,
+            'dec': 12
+        }
+        s = string.strip()[:3].lower()
+        try:
+            out = m[s]
+            return out
+        except:
+            print("Cannot convert")
+            return string
 
     def pre_process(self, nlp, phrase):
         # pre_process takes a query phrase as input
@@ -25,9 +49,9 @@ class NLP:
     def get_query_from_phrase(self, phrase):
         start_time = datetime.datetime.now()
         self.phrase = phrase
-        #nlp = spacy.load('en_core_web_sm')
+        # nlp = spacy.load('en_core_web_sm')
         pre_processed_phrase = self.pre_process(self.nlp, str(self.phrase))
-        #print("> Attempting to parse : ", pre_processed_phrase)
+        # print("> Attempting to parse : ", pre_processed_phrase)
         query = []
 
         # spacy.displacy.serve(pre_processed_phrase, style='dep')
@@ -86,11 +110,11 @@ class NLP:
         self.time_elapsed = (end_time - start_time).total_seconds()
         return list(query)
 
-    def get_document_type(self, pre_processed_phrase):
+    def get_document_or_form_type(self, pre_processed_phrase):
         query = []
         for token in pre_processed_phrase:
             # try to find the part of the phrase that specifies the type of document or form
-            if (token.pos_ == "NOUN" and token.dep_ in ["compound", "dobj"] and token.text in ["document", "form"]):
+            if (token.pos_ == "NOUN" and token.dep_ in ["compound", "dobj", "nsubj"] and token.text in ["document", "form"]):
                 # example: transfer exchange form, so the tokens that modify the form are on the left side so add the tokens
                 # that are on the left side of the dependency tree and not far from the document or form token in the phrase
                 if (token.n_lefts > 0):
@@ -116,10 +140,21 @@ class NLP:
     def get_DOB(self, pre_processed_phrase):
         query = []
         for token in pre_processed_phrase:
-            print(token.shape_, token.pos_, token.text)
             # full DOB provided in MM/DD/YYYY format
-            if (token.shape_ == "dd/dd/dddd"):
+            # example: born in MM/YY/DDDD
+            if (token.shape_ == "dd/dd/dddd" and str(pre_processed_phrase[token.i - 2:token.i - 1]) in ["DOB", "bear"]):
                 query.append(token.text)
+                break
+            # example: born in 1950
+            elif (token.shape_ == "dddd" and str(pre_processed_phrase[token.i - 2:token.i - 1]) in ["DOB",
+                                                                                                    "bear"] and token.ent_type_ == "DATE"):
+                query.append("{}/{}/{}".format("*", "*", token.text))
+                break
+            # example: born in April 1950
+            elif (token.ent_type_ == "DATE" and token.pos_ == "PROPN" and len(list(token.subtree)) == 2):
+                month = str(self.month_string_to_number(token.text))
+                query.append("{}/{}/{}".format(month, "*", list(token.subtree)[1]))
+                break
         return_val = "DOB={}".format(" ".join(query)) if len(query) > 0 else ""
         return return_val
 
@@ -127,44 +162,59 @@ class NLP:
         query = []
         for token in pre_processed_phrase:
             # example 8605801212
-            if (len(token.text) == 10 and token.shape_ == "dddd" and str(pre_processed_phrase[token.i-2:token.i-1]) in ["phone","number", "phonenumber", "cell"]):
+            if (len(token.text) == 10 and token.shape_ == "dddd" and str(
+                    pre_processed_phrase[token.i - 2:token.i - 1]) in ["phone", "number", "phonenumber", "cell"]):
                 query.append(token.text)
                 break
             # example (860)5801212
-            elif (token.shape_ == "ddd)dddd" and str(pre_processed_phrase[token.i-2:token.i-1]) in ["phone","number", "phonenumber", "cell"]):
-                query.append(token.text)
+            elif (token.shape_ == "ddd)dddd" and str(pre_processed_phrase[token.i - 2:token.i - 1]) in ["phone",
+                                                                                                        "number",
+                                                                                                        "phonenumber",
+                                                                                                        "cell"]):
+                query.append(token.text.replace(")", ""))
                 break
             # example 860 580 1212
-            elif ((token.shape_ == "ddd" or token.shape_ == "dddd") and token.pos_ == "NUM" and len(list(token.subtree)) == 3 and str(pre_processed_phrase[token.i-2:token.i-1]) in ["phone","number", "phonenumber", "cell"]):
+            elif ((token.shape_ == "ddd" or token.shape_ == "dddd") and token.pos_ == "NUM" and len(
+                    list(token.subtree)) == 3 and str(pre_processed_phrase[token.i - 4:token.i - 3]) in ["phone",
+                                                                                                         "number",
+                                                                                                         "phonenumber",
+                                                                                                         "cell"]):
                 query.extend([t.text for t in token.subtree])
-                break
-            # example
-            elif ((token.shape_ == "ddd" or token.shape_ == "dddd") and token.pos_ == "NUM" and len(list(token.subtree)) == 2 and str(pre_processed_phrase[token.i-2:token.i-1]) in ["phone","number", "phonenumber", "cell"]):
-                query.extend([t.text for t in token.subtree if t.shape_ == "dddd" and len(t.text) > 3])
                 break
         return_val = "phone_number={}".format("".join(query)) if len(query) > 0 else ""
         return return_val
 
+    def get_SSN_or_TIN_number(self, phrase):
+        query = []
+        type = ""
+        for token in phrase:
+            if (token.text in ["SSN","TIN"]):
+                type = token.text
+                # example SSN is 1231231233
+                
+        return_val = "{}={}".format(type,"".join(query)) if len(query) > 0 else ""
+        return return_val
 
     def get_query_from_phrase_test(self, phrase):
         start_time = datetime.datetime.now()
         self.phrase = phrase
-        #nlp = spacy.load('en_core_web_sm')
+        # nlp = spacy.load('en_core_web_sm')
         pre_processed_phrase = self.pre_process(self.nlp, str(self.phrase))
-        print(pre_processed_phrase)
-        #print("> Attempting to parse : ", pre_processed_phrase)
+
         query = []
-        # for token in pre_processed_phrase:
-        #     print(token.text, token.dep_, token.pos_, list(token.children), len(list(token.subtree)))
-        #     print("    INFO : Token: ", token.text, " | POS: ", token.pos_, " | Neighbor: ", token.i, " | Dependency: ",
-        #           token.dep_, " | LEFTS ", [t.text for t in token.lefts], " | RIGHTS ", [t.text for t in token.rights],
-        #           " | subtree: ", list(token.subtree), token.shape_, " | Entity: ", token.ent_type_, " | HEAD: ", token.head, " | ", token.like_email)
-        query.append(self.get_document_type(pre_processed_phrase))
+        for token in pre_processed_phrase:
+            print(token.text, token.dep_, token.pos_, list(token.children), len(list(token.subtree)))
+            print("    INFO : Token: ", token.text, " | POS: ", token.pos_, " | Neighbor: ", token.i, " | Dependency: ",
+                  token.dep_, " | LEFTS ", [t.text for t in token.lefts], " | RIGHTS ", [t.text for t in token.rights],
+                  " | subtree: ", list(token.subtree), token.shape_, " | Entity: ", token.ent_type_, " | HEAD: ",
+                  token.head, " | ", token.like_email)
+        query.append(self.get_document_or_form_type(pre_processed_phrase))
         query.append(self.get_email(pre_processed_phrase))
         query.append(self.get_phone_number(pre_processed_phrase))
         query.append(self.get_DOB(pre_processed_phrase))
-        #query.append(self.get_SSN_number(pre_processed_phrase))
+        query.append(self.get_SSN_or_TIN_number(pre_processed_phrase))
         end_time = datetime.datetime.now()
+        # update the time_elapsed for viewers
         self.time_elapsed = (end_time - start_time).total_seconds()
         # return only non-empty query points
         return [item for item in query if item != '']

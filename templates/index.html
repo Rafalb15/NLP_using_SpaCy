@@ -4,7 +4,7 @@
   <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-  <title>Spacy & Solr demonstration</title>
+  <title>SpaCy & Solr/Lucene demonstration</title>
   <script>
     function clear_out_all(){
             document.getElementById("query_line").value = "";
@@ -136,11 +136,11 @@
 </head>
 
 <body data-gr-c-s-loaded="true" style="width:80%; margin: 0 auto">
-  <h1 id="title">Spacy & Solr demonstration for NLP and indexing</h1>
+  <h1 id="title">SpaCy & Solr/Lucene demonstration for NLP and doc retrieval</h1>
   <div style="padding-top: 50px; padding-bottom: 10px">
-    <input type="text" class="line-input" id="query_line" size="100" onclick="clear_out_query_results()" placeholder="Type in your query here, example: get W9 documents where year is 2004 ... ">
+    <input type="text" autocomplete="on" class="line-input" id="query_line" size="100" onclick="clear_out_query_results()" placeholder="Type in your query here, example: get W9 documents where year is 2004 ... ">
   </div>
-  <button id="submit_button" class="button button1">Submit</button>
+  <button id="submit_button" class="button button1" type="submit">Submit</button>
   <button id="clear_button" class="button button3">Clear results</button>
   <div id="query_parsed_result" style="font-family: Georgia; font-size : 15px; padding-top: 10px; font-style: italic;"></div>
   <div id="Solr_query_title" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0">Query results from Solr</div>

@@ -1,6 +1,8 @@
 import json
 import requests
 
+__author__      = "Rafal Bielech (i710908)"
+
 class POST_request():
     def __init__(self, url, port_number, dir):
         self.url = url
@@ -39,6 +41,7 @@ class POST_request():
         url = "http://{}:{}/{}".format(self.url, self.port_number, self.dir)
         return_str = ""
         try:
+            # make a post request with timeout of 0.5 seconds
             response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=0.5)
             #response.raise_for_status()
             return_str = response.json()
