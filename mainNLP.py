@@ -2,6 +2,7 @@ import spacy
 import datetime
 # from threading import Thread
 
+__author__      = "Rafal Bielech (i710908)"
 
 class NLP:
     def __init__(self):
@@ -78,7 +79,7 @@ class NLP:
         for token in pre_processed_phrase:
             # full DOB provided in MM/DD/YYYY format
             # example: born in MM/YY/DDDD
-            if (token.shape_ == "dd/dd/dddd" and str(pre_processed_phrase[token.i - 2:token.i - 1]) in ["DOB", "bear"]):
+            if ((token.shape_ == "dd/dd/dddd" or token.shape_ == "d/d/dddd" or token.shape_ == "dd/d/dddd" or token.shape_ == "d/dd/dddd") and str(pre_processed_phrase[token.i - 2:token.i - 1]) in ["DOB", "bear"]):
                 query.append(token.text)
                 break
             # example: born in 1950
@@ -122,14 +123,13 @@ class NLP:
 
     def get_SSN_or_TIN_number(self, pre_processed_phrase):
         query = []
-        type = ""
         for token in pre_processed_phrase:
-            if (("SSN" in str(list(token.subtree)) or "TIN" in str(list(token.subtree))) and len(list(token.subtree)) > 2 and "dddd" in [t.shape_ for t in token.subtree]):
+            if ("ssn" in str(list(token.subtree))):
                 # example SSN is 1231231234
-                type = [t.text for t in token.subtree if t.text == "SSN" or t.text == "TIN"][0]
-                num = next((t.text for t in token.subtree if len(token.text)==9), None)
-                query.append(num)
-        return_val = "{}={}".format(type,"".join(query)) if len(query) > 0 else ""
+                # supported end in 1234 OR start with 1234
+                query.extend([t.text for t in token.subtree if t.shape_ == "dddd" and t.pos_ == "NUM"])
+                break
+        return_val = "SSN_TIN={}".format("".join(query)) if len(query) > 0 else ""
         return return_val
 
     def get_query_from_phrase_test(self, phrase):
@@ -139,17 +139,17 @@ class NLP:
         pre_processed_phrase = self.pre_process(self.nlp, str(self.phrase))
 
         query = []
-        # for token in pre_processed_phrase:
-        #     print(token.text, token.dep_, token.pos_, list(token.children), len(list(token.subtree)))
-        #     print("    INFO : Token: ", token.text, " | POS: ", token.pos_, " | Neighbor: ", token.i, " | Dependency: ",
-        #           token.dep_, " | LEFTS ", [t.text for t in token.lefts], " | RIGHTS ", [t.text for t in token.rights],
-        #           " | subtree: ", list(token.subtree), token.shape_, " | Entity: ", token.ent_type_, " | HEAD: ",
-        #           token.head, " | ", token.like_email)
+        for token in pre_processed_phrase:
+            print(token.text, token.dep_, token.pos_, list(token.children), len(list(token.subtree)))
+            print("    INFO : Token: ", token.text, " | POS: ", token.pos_, " | Neighbor: ", token.i, " | Dependency: ",
+                  token.dep_, " | LEFTS ", [t.text for t in token.lefts], " | RIGHTS ", [t.text for t in token.rights],
+                  " | subtree: ", list(token.subtree), token.shape_, " | Entity: ", token.ent_type_, " | HEAD: ",
+                  token.head, " | ", token.like_email)
         query.append(self.get_document_or_form_type(pre_processed_phrase))
         query.append(self.get_email(pre_processed_phrase))
         query.append(self.get_phone_number(pre_processed_phrase))
         query.append(self.get_DOB(pre_processed_phrase))
-        # query.append(self.get_SSN_or_TIN_number(pre_processed_phrase))
+        query.append(self.get_SSN_or_TIN_number(pre_processed_phrase))
         end_time = datetime.datetime.now()
         # update the time_elapsed for viewers
         self.time_elapsed = (end_time - start_time).total_seconds()

@@ -8,6 +8,8 @@ import socket
 import sys
 import datetime
 
+__author__      = "Rafal Bielech (i710908)"
+
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -50,7 +52,6 @@ def form_post():
     return_result = nlp_eng.get_query_from_phrase_test(response["message"])
     # send that data to Solr/Lucene/whatever
     print(send_data_conn.send_message(return_result , nlp_eng.get_time_elapsed()))
-    ##############################################
     return jsonify("(Parsed Query Response: {} | Received: {} | Time elapsed: {} seconds)".format(return_result, currentDT.strftime("%H:%M:%S"), round(nlp_eng.get_time_elapsed(), 3)))
 
 @app.route('/document_listener', methods=['POST'])
