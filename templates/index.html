@@ -138,12 +138,12 @@
 <body data-gr-c-s-loaded="true" style="width:80%; margin: 0 auto">
   <h1 id="title">SpaCy & Solr/Lucene demonstration for NLP and doc retrieval</h1>
   <div style="padding-top: 50px; padding-bottom: 10px">
-    <input type="text" autocomplete="on" class="line-input" id="query_line" size="100" onclick="clear_out_query_results()" placeholder="Type in your query here, example: get W9 documents where year is 2004 ... ">
+    <input type="text" autocomplete="on" class="line-input" id="query_line" size="100" onclick="clear_out_query_results()" placeholder="Type in your query here, example: get W9 documents where participant's DOB is 11/15/1994 ... ">
   </div>
   <button id="submit_button" class="button button1" type="submit">Submit</button>
   <button id="clear_button" class="button button3">Clear results</button>
   <div id="query_parsed_result" style="font-family: Georgia; font-size : 15px; padding-top: 10px; font-style: italic;"></div>
-  <div id="Solr_query_title" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0">Query results from Solr</div>
+  <div id="Solr_query_title" style="font-family: Georgia; font-size : 30px; padding-top: 20px; opacity: 0.0">Query results from Solr (loopback REST Api post while Solr is being built)</div>
   <div id="Solr_query_time" style="font-family: Georgia; font-size : 15px; font-style: italic; padding-top: 5px"></div>
   <div id="Solr_query_docs" style="font-family: Georgia; font-size : 20px"></div>
 </body>
