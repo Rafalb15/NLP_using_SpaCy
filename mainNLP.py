@@ -124,7 +124,7 @@ class NLP:
     def get_SSN_or_TIN_number(self, pre_processed_phrase):
         query = []
         for token in pre_processed_phrase:
-            if ("ssn" in str(list(token.subtree))):
+            if ("SSN" in str(list(token.subtree))):
                 # example SSN is 1231231234
                 # supported end in 1234 OR start with 1234
                 query.extend([t.text for t in token.subtree if t.shape_ == "dddd" and t.pos_ == "NUM"])
